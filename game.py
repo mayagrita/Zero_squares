@@ -47,32 +47,32 @@ class state:
 
 
 
-    def can_move(self, B_matrix, i, j, direct):
+    def can_move(self, B_matrix, n, m, direct):
         if direct == 'right':
-             return j + 1 < len(B_matrix[0]) and B_matrix[i][j + 1] not in [1, 2, 3, 6]
+             return m + 1 < len(B_matrix[0]) and B_matrix[n][m + 1] not in [1, 2, 3, 6]
 
 
         elif direct == 'left':
-            return j - 1 >= 0 and B_matrix[i][j - 1] not in [1, 2, 3, 6]
+            return m - 1 >= 0 and B_matrix[n][m - 1] not in [1, 2, 3, 6]
 
 
         elif direct == 'down':
-            return i - 1 >= 0 and B_matrix[i - 1][j] not in [1, 2, 3, 6]
+            return n - 1 >= 0 and B_matrix[n - 1][m] not in [1, 2, 3, 6]
 
             
         elif direct == 'up':
-            return i + 1 < len(B_matrix) and B_matrix[i + 1][j] not in [1, 2, 3, 6]
+            return n + 1 < len(B_matrix) and B_matrix[n + 1][m] not in [1, 2, 3, 6]
         return False
 
 
 
-    def check_goal(self, B_matrix, i, j, n_j, n_i):
-        if B_matrix[i][j] == 2 and B_matrix[n_i][n_j] == 4:
-            B_matrix[n_i][n_j] = 0
-        if B_matrix[i][j] == 3 and B_matrix[n_i][n_j] == 5:
-            B_matrix[n_i][n_j] = 0
-        if B_matrix[i][j] == 6 and B_matrix[n_i][n_j] == 7:
-            B_matrix[n_i][n_j] = 0
+    def check_goal(self, B_matrix, i, j, m, n):
+        if B_matrix[i][j] == 2 and B_matrix[n][m] == 4:
+            B_matrix[n][m] = 0
+        if B_matrix[i][j] == 3 and B_matrix[n][m] == 5:
+            B_matrix[n][m] = 0
+        if B_matrix[i][j] == 6 and B_matrix[n][m] == 7:
+            B_matrix[n][m] = 0
 
 
 
