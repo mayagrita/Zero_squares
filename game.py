@@ -1,17 +1,33 @@
 import matplotlib.pyplot as plt
 from copy import deepcopy
+from collections import deque
+import time
+
+# level 1
+# B_matrix1 = [
+#     [0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0],
+#     [1, 1, 2, 0, 0, 1, 1, 1, 1, 1, 0],
+#     [1, 0, 0, 0, 6, 1, 1, 0, 0, 1, 0],
+#     [1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
+#     [1, 0, 5, 0, 7, 1, 1, 0, 0, 0, 1],
+#     [1, 0, 0, 0, 0, 4, 0, 3, 0, 1, 1],
+#     [1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0],
+#     [0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0]
+# ]
+
+
+#level 2
 
 B_matrix1 = [
-    [0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0],
-    [1, 1, 2, 0, 0, 1, 1, 1, 1, 1, 0],
-    [1, 0, 0, 0, 6, 1, 1, 0, 0, 1, 0],
-    [1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
-    [1, 0, 5, 0, 7, 1, 1, 0, 0, 0, 1],
-    [1, 0, 0, 0, 0, 4, 0, 3, 0, 1, 1],
-    [1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0],
-    [0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0]
+    [0, 1, 1, 1, 1, 0, 0, 0, 0],
+    [1, 1, 2, 0, 1, 1, 1, 1, 1],
+    [1, 0, 0, 0, 0, 0, 1, 0, 1],
+    [1, 0, 4, 0, 1, 0, 0, 7, 1],
+    [1, 1, 0, 5, 1, 0, 3, 0, 1],
+    [0, 1, 1, 0, 1, 0, 0, 0, 1],
+    [0, 0, 1, 1, 1, 1, 1, 6, 1],
+    [0, 0, 0, 1, 0, 0, 1, 1, 1]
 ]
-
 
 
 #________________________________________________________
@@ -69,31 +85,55 @@ class state:
     def check_goal(self, B_matrix, i, j, m, n):
         if B_matrix[i][j] == 2 and B_matrix[n][m] == 4:
             B_matrix[n][m] = 0
+            B_matrix[i][j] = 0
+
         if B_matrix[i][j] == 3 and B_matrix[n][m] == 5:
             B_matrix[n][m] = 0
+            B_matrix[i][j] = 0
+
         if B_matrix[i][j] == 6 and B_matrix[n][m] == 7:
             B_matrix[n][m] = 0
+            B_matrix[i][j] = 0
 
+
+    def if_win(self):
+      
+        return all(cell == 0 for row in self.B_matrix for cell in row if cell in [4, 5, 7])
 
 
 
 #____________________________________________
 class GUI:
-    def __init__(self, state):
+    # def __init__(self, state):
+    #     self.state = state
+    #     # self.fig, self.ax = plt.subplots(1, 5, figsize=(20, 5))
+    #     self.fig, self.ax = plt.subplots(1, 1, figsize=(5, 5)) 
+    #     self.update_board()
+    def __init__(self, ax, state,method_name='Algorithm'):
         self.state = state
-        self.fig, self.ax = plt.subplots(1, 5, figsize=(20, 5))
+        self.ax = ax
+        self.method_name = method_name
         self.update_board()
+
+#التابع ليعمل واجهة فيها عدة اقسام غير الرئيسي
+    # def update_board(self):
+    #     for ax in self.ax:
+    #         ax.clear() 
+    #     self.print_B_matrix( self.ax[0],self.state.B_matrix)
+    #     self.ax[0].set_title('Current')
+    #     self.next_state()
+    #     plt.draw()
+
 
 
 
     def update_board(self):
-        for ax in self.ax:
-            ax.clear() 
-        self.print_B_matrix( self.ax[0],self.state.B_matrix)
-        self.ax[0].set_title('Current')
-        self.next_state()
+        self.ax.clear()
+        self.print_B_matrix( self.ax,self.state.B_matrix)
+        # self.ax.set_title('Current')
+        self.ax.set_title(self.method_name)
+        # self.next_state()
         plt.draw()
-
 
 
     def next_state(self):
@@ -103,8 +143,8 @@ class GUI:
         for idx, direct in enumerate(directs, start=1):
             new_state = self.state.move(direct)  
             next_states_objects.append(new_state) 
-            self.print_B_matrix(self.ax[idx],new_state.B_matrix)  
-            self.ax[idx].set_title(direct.capitalize())
+            # self.print_B_matrix(self.ax[idx],new_state.B_matrix)  
+            # self.ax[idx].set_title(direct.capitalize())
 
         return next_states_objects  
 
@@ -143,15 +183,71 @@ class GUI:
 
 #_________________________________________________
 class Play:
-    def __init__(self, B_matrix):
+    def __init__(self, B_matrix, ax, method_name='Algorithm'):
         self.current_B_matrix = B_matrix
         self.history = []
         self.state = state(self.current_B_matrix)
-        self.game_ui = GUI(self.state)
-        self.fig = self.game_ui.fig
-        self.fig.canvas.mpl_connect('key_press_event', self.press)
+        # self.game_ui = GUI(self.state)
+        # self.fig = self.game_ui.fig
+        # self.fig.canvas.mpl_connect('key_press_event', self.press)
+        self.game_ui = GUI(ax, self.state, method_name=method_name)
+        # self.game_ui = GUI(ax, self.state)
+ 
 
 
+    def search(self, method='bfs'):
+        start_state = self.state
+        if method == 'bfs':
+            queue = deque([(start_state, [])])  
+            visited = set()
+            while queue:
+                current_state, path = queue.popleft()
+                current_key = tuple(map(tuple, current_state.B_matrix))
+
+                if current_key in visited:
+                    continue
+                visited.add(current_key)
+
+                if current_state.if_win():
+                    print("Solution found with BFS ,Path:", path)
+                    return path
+
+                directions = ['up', 'down', 'left', 'right']
+                for direction in directions:
+                    new_state = current_state.move(direction)
+                    new_key = tuple(map(tuple, new_state.B_matrix))
+                    
+                    if new_key not in visited:
+                        queue.append((new_state, path + [direction]))
+
+            print("No solution found.", queue)
+            return None
+
+        elif method == 'dfs':
+            stack = [(start_state, [])]
+            visited = set()
+            while stack:
+                current_state, path = stack.pop()
+                current_key = tuple(map(tuple, current_state.B_matrix))
+
+                if current_key in visited:
+                    continue
+                visited.add(current_key)
+
+                if current_state.if_win():
+                    print("Solution found with DFS ,Path:", path)
+                    return path
+
+                directions = ['up', 'down', 'left', 'right']
+                for direction in directions:
+                    new_state = current_state.move(direction)
+                    new_key = tuple(map(tuple, new_state.B_matrix))
+                    
+                    if new_key not in visited:
+                        stack.append((new_state, path + [direction]))
+
+            print("No solution found.", stack)
+            return None
 
 
     def press(self, event):
@@ -169,17 +265,28 @@ class Play:
             self.current_B_matrix = new_state.B_matrix
             self.history.append(old_B_matrix)
 
-            if self.history: 
-                last_move = self.history[-1]
-                move_number = len(self.history)  
-                print(f"Move {move_number}:")
-                for row in last_move:
-                 print(row)
+            # if self.history: 
+            #     last_move = self.history[-1]
+            #     move_number = len(self.history)  
+            #     print(f"Move {move_number}:")
+            #     for row in last_move:
+            #      print(row)
               
 
+    def show_solution(self, solution_path):
+        if solution_path:
+            for move in solution_path: 
+                new_state = self.state.move(move)
+                self.state = new_state
+                self.game_ui.state = self.state
+                self.game_ui.update_board()
+                plt.pause(0.8) 
+                plt.draw
+                
+        else:
+            print("No solution to show.")
 
 
-# هون برجع ازا تحرك نفس لحركةواستدعيتو بال press
 
     def check_equals(self, old_B_matrix, new_B_matrix):
         if old_B_matrix == new_B_matrix:
@@ -187,5 +294,24 @@ class Play:
             return True
 
 
-game = Play(B_matrix1)
+# game = Play(B_matrix1)
+
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))
+
+
+
+game_bfs = Play(B_matrix1, ax1, method_name='BFS Algorithm')
+ax1.set_title("BFS Algorithm")
+
+game_dfs = Play(B_matrix1, ax2, method_name='DFS Algorithm')
+ax2.set_title("DFS Algorithm")
+
+
+solution_path_bfs = game_bfs.search(method='bfs')
+solution_path_dfs = game_dfs.search(method='dfs')
+
+game_bfs.show_solution(solution_path_bfs)
+game_dfs.show_solution(solution_path_dfs)
+
 plt.show()
+plt.close('all')
