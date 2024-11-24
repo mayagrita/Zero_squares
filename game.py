@@ -194,6 +194,33 @@ class Play:
         # self.game_ui = GUI(ax, self.state)
  
 
+    def dfs_recursive(self, initial_state):
+        def dfs_r(current_state, path, visited):
+            
+            current_key = tuple(map(tuple, current_state.B_matrix))
+
+           
+            if current_key in visited:
+                return None
+            visited.add(current_key)
+
+            if current_state.if_win():
+                return path
+
+            
+            directions = ['up', 'down', 'left', 'right']
+            for direction in directions:
+               
+                new_state = current_state.move(direction)
+                result = dfs_r(new_state, path + [direction], visited)
+                if result is not None:
+                    return result
+
+            return None
+
+        visited = set()
+        return dfs_r(initial_state, [], visited)
+
 
     def search(self, method='bfs'):
         start_state = self.state
@@ -296,22 +323,36 @@ class Play:
 
 # game = Play(B_matrix1)
 
-fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))
+# fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))
 
 
 
-game_bfs = Play(B_matrix1, ax1, method_name='BFS Algorithm')
-ax1.set_title("BFS Algorithm")
+# game_bfs = Play(B_matrix1, ax1, method_name='BFS Algorithm')
+# ax1.set_title("BFS Algorithm")
 
-game_dfs = Play(B_matrix1, ax2, method_name='DFS Algorithm')
-ax2.set_title("DFS Algorithm")
+# game_dfs = Play(B_matrix1, ax2, method_name='DFS Algorithm')
+# ax2.set_title("DFS Algorithm")
 
 
-solution_path_bfs = game_bfs.search(method='bfs')
-solution_path_dfs = game_dfs.search(method='dfs')
+# solution_path_bfs = game_bfs.search(method='bfs')
+# solution_path_dfs = game_dfs.search(method='dfs')
 
-game_bfs.show_solution(solution_path_bfs)
-game_dfs.show_solution(solution_path_dfs)
+# game_bfs.show_solution(solution_path_bfs)
+# game_dfs.show_solution(solution_path_dfs)
 
-plt.show()
-plt.close('all')
+
+
+# plt.show()
+# plt.close('all')
+
+
+fig, ax = plt.subplots(1, 1, figsize=(8, 8))
+game = Play(B_matrix1, ax)
+
+# استدعاء DFS باستخدام الحالة الأولى
+solution_path = game.dfs_recursive(game.state)
+if solution_path:
+    print("Solution Path (DFS Recursive):", solution_path)
+    game.show_solution(solution_path)  
+else:
+    print("No solution found.")
