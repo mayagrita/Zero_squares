@@ -1,33 +1,34 @@
 import matplotlib.pyplot as plt
 from copy import deepcopy
 from collections import deque
-import time
+from queue import PriorityQueue 
+
 
 # level 1
-# B_matrix1 = [
-#     [0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0],
-#     [1, 1, 2, 0, 0, 1, 1, 1, 1, 1, 0],
-#     [1, 0, 0, 0, 6, 1, 1, 0, 0, 1, 0],
-#     [1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
-#     [1, 0, 5, 0, 7, 1, 1, 0, 0, 0, 1],
-#     [1, 0, 0, 0, 0, 4, 0, 3, 0, 1, 1],
-#     [1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0],
-#     [0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0]
-# ]
+B_matrix1 = [
+    [0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0],
+    [1, 1, 2, 0, 0, 1, 1, 1, 1, 1, 0],
+    [1, 0, 0, 0, 6, 1, 1, 0, 0, 1, 0],
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
+    [1, 0, 5, 0, 7, 1, 1, 0, 0, 0, 1],
+    [1, 0, 0, 0, 0, 4, 0, 3, 0, 1, 1],
+    [1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0],
+    [0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0]
+]
 
 
 #level 2
 
-B_matrix1 = [
-    [0, 1, 1, 1, 1, 0, 0, 0, 0],
-    [1, 1, 2, 0, 1, 1, 1, 1, 1],
-    [1, 0, 0, 0, 0, 0, 1, 0, 1],
-    [1, 0, 4, 0, 1, 0, 0, 7, 1],
-    [1, 1, 0, 5, 1, 0, 3, 0, 1],
-    [0, 1, 1, 0, 1, 0, 0, 0, 1],
-    [0, 0, 1, 1, 1, 1, 1, 6, 1],
-    [0, 0, 0, 1, 0, 0, 1, 1, 1]
-]
+# B_matrix1 = [
+#     [0, 1, 1, 1, 1, 0, 0, 0, 0],
+#     [1, 1, 2, 0, 1, 1, 1, 1, 1],
+#     [1, 0, 0, 0, 0, 0, 1, 0, 1],
+#     [1, 0, 4, 0, 1, 0, 0, 7, 1],
+#     [1, 1, 0, 5, 1, 0, 3, 0, 1],
+#     [0, 1, 1, 0, 1, 0, 0, 0, 1],
+#     [0, 0, 1, 1, 1, 1, 1, 6, 1],
+#     [0, 0, 0, 1, 0, 0, 1, 1, 1]
+# ]
 
 
 #________________________________________________________
@@ -192,7 +193,7 @@ class Play:
         # self.fig.canvas.mpl_connect('key_press_event', self.press)
         self.game_ui = GUI(ax, self.state, method_name=method_name)
         # self.game_ui = GUI(ax, self.state)
- 
+
 
     def dfs_recursive(self, initial_state):
         def dfs_r(current_state, path, visited):
@@ -216,7 +217,7 @@ class Play:
                 if result is not None:
                     return result
 
-            return None
+           
 
         visited = set()
         return dfs_r(initial_state, [], visited)
@@ -275,6 +276,36 @@ class Play:
 
             print("No solution found.", stack)
             return None
+
+        elif method == 'ucs':
+
+            pq = PriorityQueue()
+            pq.put((0, id(start_state), start_state, []))
+            visited = set()
+
+            while not pq.empty():
+                cost, _, current_state, path = pq.get()
+                current_key = tuple(map(tuple, current_state.B_matrix))
+
+                if current_key in visited:
+                    continue
+                visited.add(current_key)
+
+                if current_state.if_win():
+                    print("Solution found with UCS! Path:", path)
+                    return path
+
+                directions = ['up', 'down', 'left', 'right']
+                for direction in directions:
+                    new_state = current_state.move(direction)
+                    new_key = tuple(map(tuple, new_state.B_matrix))
+
+                    if new_key not in visited:
+                        new_cost = cost + 1
+                        pq.put((new_cost, id(new_state), new_state, path + [direction]))
+
+        print("No solution found with UCS.")
+        return None
 
 
     def press(self, event):
@@ -346,13 +377,24 @@ class Play:
 # plt.close('all')
 
 
+# fig, ax = plt.subplots(1, 1, figsize=(8, 8))
+# game = Play(B_matrix1, ax)
+
+
+# solution_path = game.dfs_recursive(game.state)
+# if solution_path:
+#     print("Solution Path (DFS Recursive):", solution_path)
+#     game.show_solution(solution_path)  
+# else:
+#     print("No solution found.")
+
 fig, ax = plt.subplots(1, 1, figsize=(8, 8))
 game = Play(B_matrix1, ax)
 
-# استدعاء DFS باستخدام الحالة الأولى
-solution_path = game.dfs_recursive(game.state)
-if solution_path:
-    print("Solution Path (DFS Recursive):", solution_path)
-    game.show_solution(solution_path)  
+solution_path_ucs = game.search(method='ucs')
+
+if solution_path_ucs:
+    # print("Solution Path (UCS):", solution_path_ucs)
+    game.show_solution(solution_path_ucs)
 else:
-    print("No solution found.")
+    print("No solution found with UCS.")
