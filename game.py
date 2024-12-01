@@ -8,12 +8,12 @@ from queue import PriorityQueue
 # level 1
 B_matrix1 = [
     [0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0],
-    [1, 1, 2, 0, 0, 1, 1, 1, 1, 1, 0],
-    [1, 0, 0, 0, 6, 1, 1, 0, 0, 1, 0],
-    [1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
-    [1, 0, 5, 0, 7, 1, 1, 0, 0, 0, 1],
-    [1, 0, 0, 0, 0, 4, 0, 3, 0, 1, 1],
-    [1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0],
+    [1, 1, 3, 0, 0, 1, 1, 1, 1, 1, 0],
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
+    [1, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 5, 1],
+    [1, 0, 0, 0, 1, 1, 4, 0, 0, 1, 1],
+    [1, 1, 2, 0, 1, 1, 1, 1, 1, 1, 0],
     [0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0]
 ]
 
@@ -215,7 +215,7 @@ class Play:
             for mx, my in movers[mover]:
                 distances = [abs(mx - tx) + abs(my - ty) for tx, ty in targets[targte_num]]
                 if distances:
-                    distance += min(distances) 
+                     distance += sum(distances)
 
         return distance
 # ---------------------
@@ -335,6 +335,8 @@ class Play:
           pq = PriorityQueue()
           pq.put((0, 0, id(start_state), start_state, []))  
           visited = set()
+          total_cost = 0 
+          visited_count = 0 
  
           while not pq.empty():
            f_cost, g_cost, _, current_state, path = pq.get()
@@ -343,9 +345,13 @@ class Play:
            if current_key in visited:
             continue
            visited.add(current_key)
+           visited_count += 1
 
            if current_state.if_win():
-            print("Solution found with A*! Path:", path)
+            print("Solution found with A*!")
+            print(f"Path: {path}")
+            print(f"Total cost: {g_cost}")
+            print(f"Visited nodes: {visited_count}")
             return path
 
            directions = ['up', 'down', 'left', 'right']
