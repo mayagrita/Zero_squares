@@ -11,8 +11,8 @@ B_matrix1 = [
     [1, 1, 3, 0, 0, 1, 1, 1, 1, 1, 0],
     [1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
     [1, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1],
-    [1, 0, 0, 0, 0, 0, 0, 0, 0, 5, 1],
-    [1, 0, 0, 0, 1, 1, 4, 0, 0, 1, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 4, 1],
+    [1, 0, 0, 0, 1, 1, 5, 0, 0, 1, 1],
     [1, 1, 2, 0, 1, 1, 1, 1, 1, 1, 0],
     [0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0]
 ]
@@ -195,6 +195,54 @@ class Play:
         # self.figm.canvas.mpl_connect('key_press_event', self.press)
         self.game_ui = GUI(ax, self.state, method_name=method_name)
         # self.game_ui = GUI(ax, self.state)
+#--------------------- 
+    def hill_climbing(self):
+     current_state = self.state
+     current_cost = self.heuristic(current_state.B_matrix)
+     visited = set()
+     visited_count = 0
+
+     while True:
+        visited.add(tuple(map(tuple, current_state.B_matrix)))
+        next_state = None
+        next_cost = 5555555
+        visited_count += 1
+
+        directions = ['up', 'down', 'left', 'right']
+        for direction in directions:
+            new_state = current_state.moving(direction)
+            new_key = tuple(map(tuple, new_state.B_matrix))
+            
+            if new_key in visited:
+                continue
+            
+            new_cost = self.heuristic(new_state.B_matrix)
+            
+           
+            if new_cost < next_cost:
+                next_state = new_state
+                next_cost = new_cost
+
+       
+        if next_state is None or next_cost >= current_cost:
+            break
+
+        
+        current_state = next_state
+        current_cost = next_cost
+        self.state = current_state
+        self.game_ui.state = self.state
+        self.game_ui.update_board()
+        plt.pause(0.8)
+
+  
+     if current_state.if_win():
+        print("Solution found with Hill Climbing!")
+     else:
+        print("Hill Climbing stopped")
+        print(f"Visited nodes: {visited_count}")
+
+
 # --------------------
     def heuristic(self, B_matrix):
      
@@ -487,11 +535,14 @@ class Play:
 
 
 # _____________________________________________
+# figm, ax = plt.subplots(1, 1, figsize=(8, 8))
+# game = Play(B_matrix1, ax)
+# solution_path_astar = game.search(method='astar') 
+
+# if solution_path_astar:
+#     game.show_solution(solution_path_astar) 
+# else:
+#     print("No solution found with A*.")
 figm, ax = plt.subplots(1, 1, figsize=(8, 8))
 game = Play(B_matrix1, ax)
-solution_path_astar = game.search(method='astar') 
-
-if solution_path_astar:
-    game.show_solution(solution_path_astar) 
-else:
-    print("No solution found with A*.")
+game.hill_climbing()
